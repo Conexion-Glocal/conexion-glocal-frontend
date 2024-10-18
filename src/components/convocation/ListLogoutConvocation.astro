@@ -59,7 +59,7 @@ const { endpoint, permissions } = Astro.props;
 import axios from "axios";
 let getPublicConvocation = [];
 await axios
-  .get(`${import.meta.env.API_URL}processes`)
+  .get(`${import.meta.env.PUBLIC_API_URL}processes`)
   .then(function (response) {
     getPublicConvocation = response.data;
   })
@@ -70,7 +70,7 @@ await axios
 let processinfo = [];
 let processDetailsPromises = getPublicConvocation.map((process) => {
   return axios
-    .get(`${import.meta.env.API_URL}processes/details/${process.id}`)
+    .get(`${import.meta.env.PUBLIC_API_URL}processes/details/${process.id}`)
     .then(function (response) {
       return response.data; // Retornar los detalles del proceso
     })
