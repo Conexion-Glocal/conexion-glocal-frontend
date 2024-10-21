@@ -6,11 +6,15 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import ConvocationWithoutLogin from "@layouts/ConvocationWithoutLogin.astro";
 import ListLogoutConvocation from "@components/convocation/ListLogoutConvocation.astro";
 ---
-
-<div>
+<style>
+    [x-cloak] { display: none !important; }
+  </style>
+<div x-data="{ pageLoaded: false }" x-init="pageLoaded = true">
     <nav
         style="background-color: #305959;"
         class="text-white flex justify-between items-center py-4 px-8 h-24"
+        x-cloak
+        x-show="pageLoaded"
     >
         <div x-data="{ showInput: false }" class="flex justify-between items-center w-2/5">
             <button
@@ -20,6 +24,7 @@ import ListLogoutConvocation from "@components/convocation/ListLogoutConvocation
                 <Icon class="h-8 w-8" name="shared/search" />
             </button>
             <input
+                x-cloak
                 x-show="showInput"
                 type="text"
                 placeholder="Buscar..."
@@ -37,36 +42,38 @@ import ListLogoutConvocation from "@components/convocation/ListLogoutConvocation
             </a>
         </div>
     </nav>
-    <div class="relative w-full items-center">
+
+    <div class="relative w-full items-center" x-cloak x-show="pageLoaded">
         <img
             src="/images/bg/estudiantes.png"
             alt=""
             class="w-full h-auto brightness-50"
         />
-        <div
-            class="absolute inset-0 flex flex-col items-center justify-center text-white text-center"
-        >
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-white text-center">
             <p class="text-2xl md:text-2xl font-bold rounded-md">
                 Tu ventana al aprendizaje global:
             </p>
             <p class="text-xl font-thin">
-                sigue el crecimiento y la integracion <br /> internacional de nuestra
+                Sigue el crecimiento y la integracion <br /> internacional de nuestra
                 <br /> comunidad academica
             </p>
 
             <button
-                onclick="window.location.href='#calls'"
+                onclick="document.querySelector('#calls').scrollIntoView({ behavior: 'smooth' })"
                 class="bg-emerald-500 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-full mt-10"
             >
                 Explora ahora
             </button>
         </div>
     </div>
-    <div class="flex items-center justify-center m-10">
+
+    <div class="flex items-center justify-center m-10" x-cloak x-show="pageLoaded">
         <img src="/images/logos/universidades.png" alt="" class="h-3/4 w-4/5" />
     </div>
-    <div class="h-auto" style="background-color: #11426E;" id="calls">
+
+    <div class="h-auto" style="background-color: #11426E;" id="calls" x-cloak x-show="pageLoaded">
         <p class="text-white text-2xl font-bold p-5">Convocatorias</p>
         <ListLogoutConvocation />
     </div>
 </div>
+

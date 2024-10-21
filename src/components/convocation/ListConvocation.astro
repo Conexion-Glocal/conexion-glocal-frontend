@@ -3,50 +3,75 @@ import { Icon } from "astro-icon/components";
 
 import { handleFind } from "@resources/index";
 
-const { endpoint, permissions } = Astro.props;
 
-// import axios from "axios";
-// let calls = [];
-// await axios.get(`${import.meta.env.API_URL}processes`)
-//   .then(function (response) {
-//     calls = response.data;
-//   })
-//   .catch(function (error) {
-//     console.log(error);
-//   })
+import axios from "axios";
+let getPublicConvocation = [];
+await axios
+  .get(`${import.meta.env.PUBLIC_API_URL}processes`)
+  .then(function (response) {
+    getPublicConvocation = response.data;
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
 
-const getPublicConvocation = [
-  {
-    id: "E-24",
-    name: "Convocatoria 2024-01",
-    country: "Mexico",
-    university: "Universidad de Monterrey",
-    status: "Activo",
-  },
-  {
-    id: "D-22",
-    name: "Convocatoria 2024-02",
-    country: "Venezuela",
-    university: "Universidad de Los Andes",
-    status: "Activo",
-  },
-  {
-    id: "A-11",
-    name: "Convocatoria 2024-03",
-    country: "Brazil",
-    university: "Universidad de Brasilia (UnB)",
-    status: "Cerrada",
-  },
-];
+let processinfo = [];
+let processDetailsPromises = getPublicConvocation.map((process) => {
+  return axios
+    .get(`${import.meta.env.PUBLIC_API_URL}processes/complete/${process.id}`)
+    .then(function (response) {
+      return response.data; // Retornar los detalles del proceso
+    })
+    .catch(function (error) {
+      console.log(
+        `Error fetching details for process ID: ${process.id}`,
+        error,
+      );
+    });
+});
+
+
+
+
+await Promise.all(processDetailsPromises)
+  .then(function (results) {
+    processinfo = results;
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+
+let processStudents=[]
+let processWithStudents= getPublicConvocation.map((process)=>{
+  return axios.get(`${import.meta.env.PUBLIC_API_URL}processes/process-with-students/${process.id}`)
+  .then(function(response){
+    return response.data
+  })
+  .catch(function(error){
+    console.log(`Error fetching details for process ID: ${process.id}`,
+        error,);
+  })
+})
+
+await Promise.all(processWithStudents)
+  .then(function (results) {
+    processStudents = results;
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+
+console.log(processStudents)
+
+
 ---
 
 <div
   class="bg-white shadow-md rounded-md overflow-hidden mx-auto  "
   x-data=`{ selectedrole: ''}`
 >
-  <!-- <div class="bg-gray-100 py-2 px-4">
-    <h2 class="text-xl font-semibold text-gray-800">Convocatorias</h2>
-  </div> -->
 
   <div x-model="selectedrole" class="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-4 mt-4 mb-10">
     <button
@@ -77,8 +102,8 @@ const getPublicConvocation = [
 
   <div x-data="{ flags: ['BR/shiny/64.png', 'MX/shiny/64.png', 'VE/shiny/64.png'] }">
     <ul class="divide-y divide-gray-200">
-      <template x-for=`(convocatoria, index) in ${JSON.stringify(getPublicConvocation)}` :key="convocatoria.id">
-        <li class="flex flex-wrap justify-around items-center py-2 px-3" x-if="selectedrole === '' || selectedrole === convocatoria.role">
+      <template x-for=`(convocatoria, index) in ${JSON.stringify(processinfo)}` :key="convocatoria.process.id">
+        <li class="flex flex-wrap justify-around items-center py-2 px-3">
           <img
             class="w-12 h-12 rounded-full object-cover mr-4"
             :src="`https://flagsapi.com/${flags[index]}`"
@@ -86,13 +111,19 @@ const getPublicConvocation = [
           />
 
           <div class="w-full md:w-1/4 mx-auto md:mx-0 text-center md:text-left mb-5 md:mb-0">
-            <h3 class="text-black text-base" x-text="`${convocatoria.id} - ${convocatoria.country}`"></h3>
-            <p class="text-gray-600 text-base" x-text="convocatoria.university"></p>
+            <h3 class="text-black text-base" x-text="`${convocatoria.process.name} `"></h3>
+            <p class="text-gray-600 text-base" x-text="convocatoria.process.subprocess"></p>
         </div>
         
-        
+        <template x-for=`(estudiantes,index) in ${JSON.stringify(processStudents)}` :key="estudiantes.process.id">
+          <template x-if=`convocatoria.process.id === estudiantes.process.id`>
+            <div class=" w-10 h-10 bg-emerald-600 rounded-md text-white flex justify-center items-center">
+              <p x-text="estudiantes.process.student_ids.length"></p>
+            </div>
+          </template>
+        </template>
 
-          <template x-if="convocatoria.status === 'Activo'">
+          <template x-if="convocatoria.process.status === true">
             <div class="grid grid-cols-2 w-1/3 text-green-600">
               <div class="flex flex-col items-center">
                 <Icon class="h-10 w-10" name="shared/check_circle" />
@@ -101,7 +132,7 @@ const getPublicConvocation = [
             </div>
           </template>
 
-          <template x-if="convocatoria.status === 'Cerrada'">
+          <template x-if="convocatoria.process.status === false">
             <div class="grid grid-cols-2 w-1/3 text-red-600">
               <div class="flex flex-col items-center">
                 <Icon class="h-10 w-10" name="shared/error" />
@@ -121,6 +152,9 @@ const getPublicConvocation = [
             </button>
             
             <div class="absolute right-20 z-10 mt-2 w-32 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-gray-900/5 focus:outline-none" tabindex="-1" x-show="isListOptionsMenuOpen" @click.outside="isListOptionsMenuOpen = false">
+              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isUpdateWindowOpen = true; selectedProcess = convocatoria.id;">
+                Ver detalles
+              </a>
               <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isUpdateWindowOpen = true; selectedProcess = convocatoria.id;">
                 Duplicar
               </a>
@@ -143,78 +177,9 @@ const getPublicConvocation = [
     </ul>
   </div>
 </div>
-</div>
 
 
 
-<!-- <ul
-  class="divide-y divide-gray-100 bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl"
->
-  {
-    getPublicConvocation.length > 0 ? (
-      getPublicConvocation.map(({ id, name }) => (
-        <li class="grid grid-cols-3 gap-x-6 px-2 py-3 hover:bg-gray-50 sm:px-6">
-          <div class="flex flex-col min-w-0 gap-y-2">
-            <div class="min-w-0 flex-auto">
-              <h4 class="text-lg font-semibold text-gray-900">{name}</h4>
-              <p class="text-gray-600">Oferta: </p>
-              <p class="text-gray-600">Fecha de inicio: </p>
-              <p class="text-gray-600">Fecha de fin: </p>
-            </div>
-          </div>
-          <div class="flex justify-center items-center space-x-10">
-            <button
-              type="button"
-              class="inline-flex items-center justify-center rounded-md  bg-emerald-500 hover:bg-emerald-700 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300"
-            >
-              Ver detalles
-            </button>
-            <button
-              type="button"
-              class="inline-flex items-center justify-center rounded-md  bg-yellow-300 hover:bg-yellow-500 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300"
-            >
-              Nominar
-            </button>
-          </div>
-          <div
-            class="flex justify-end items-center"
-            x-data="{isListOptionsMenuOpen: false}"
-          >
-            <button
-              class="-m-5.5 block p-2.5 text-gray-500 hover:text-gray-900"
-              type="button"
-              @click="isListOptionsMenuOpen = !isListOptionsMenuOpen"
-            >
-              <Icon class="h-10 w-10" name="shared/ellipsis-vertical" />
-            </button>
-            <div
-              class="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-              tabindex="-1"
-              x-show="isListOptionsMenuOpen"
-              @click.outside="isListOptionsMenuOpen = false"
-            >
-              <a
-                href="#"
-                class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
-                tabindex="-1"
-              >
-                Editar
-              </a>
 
-              <a
-                href="#"
-                class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
-                tabindex="-1"
-                @click.prevent={` id = '${id}'; console.log('Form ID for delete:', '${id}');`}
-              >
-                Eliminar
-              </a>
-            </div>
-          </div>
-        </li>
-      ))
-    ) : (
-      <li class="text-gray-600 p-4">No hay convocatorias disponibles.</li>
-    )
-  }
-</ul> -->
+
+
