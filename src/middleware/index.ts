@@ -1,4 +1,3 @@
-/*
 import { PUBLIC_ROUTES } from "@constants/shared";
 import { db, Session, eq } from "astro:db";
 import jwt from "jsonwebtoken";
@@ -10,7 +9,7 @@ export const onRequest = async (context, next) => {
         const refreshToken = jwt.verify(data[0].refresh_token, 'secretkey')
         if (accessToken) {
             if (PUBLIC_ROUTES.includes(context.url.pathname) || context.url.pathname.search('/password/reset/') != -1) {
-                return Response.redirect(`${context.url.origin}/home`⁠);
+                return Response.redirect(`${context.url.origin}/home`);
             } else {
                 return next();
             }
@@ -20,6 +19,6 @@ export const onRequest = async (context, next) => {
             } else {
                 return Response.redirect(`${context.url.origin}/error/404`);
             }
-        }    
         }
-*/
+    }
+}
