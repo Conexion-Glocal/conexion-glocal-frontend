@@ -6,6 +6,7 @@ export const BREADCRUMB = {
 };
 
 export const PUBLIC_ROUTES = [
+    '/login',
     '/'
 ];
 export const YES_NO_OPTIONS = [

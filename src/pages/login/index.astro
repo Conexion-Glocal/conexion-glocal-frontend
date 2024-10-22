@@ -2,43 +2,53 @@
 import Login from "@components/login/login.astro";
 import LoginLayout from "@layouts/LoginLayout.astro";
 import axios from "axios";
+import { db, Session } from "astro:db";
+import jwt from 'jsonwebtoken';
 const endpointData = `${import.meta.env.PUBLIC_API_URL}auth/login`;
 const endpointTenant = `${import.meta.env.PUBLIC_API_URL}tenant`;
-if(Astro.request.method === "POST"){
+let state;
+if (Astro.request.method === "POST") {
     try {
-        const data = await Astro.request.formData();
-        const tenant = data.get("tenant")
-        const email = data.get("email")
-        const password = data.get("password")
-        const getData = await axios({
-            method: 'post',
+        const login = await Astro.request.formData();
+        const tenant = login.get("tenant");
+        const email = login.get("email");
+        const password = login.get("password");
+        const data = await axios({
+            method: "post",
             url: `${endpointData}`,
             data: {
                 tenant: tenant,
                 email: email,
                 password: password,
-            }
+            },
         });
-        const getTenant = await axios.get(`${endpointTenant}/${tenant}`)
-        .then((response) => response.data)
-        .catch((error)=> console.log(error));
-
-        Astro.cookies.set("access_token", `${getData.data.access_token}`);
-        Astro.cookies.set("refresh_token", `${getData.data.refresh_token}`);
-        Astro.cookies.set("image", `${getTenant.image}`)
-        Astro.cookies.set("primary_color", `${getTenant.colors.primary}`)
-        Astro.cookies.set("secondary_color", `${getTenant.colors.secondary}`)
-        Astro.cookies.set("menu", `${JSON.stringify(getData.data.menu)}`);
-        Astro.cookies.set("prueba", `bg-[${getTenant.colors.secondary}]`);
-        return Astro.redirect("/home")
+        const decoded = jwt.verify(data.data.access_token, "secretkey");
+        const getTenant = await axios
+            .get(`${endpointTenant}/${tenant}`)
+            .then((response) => response.data)
+            .catch((error) => console.log(error));         
+        await db.delete(Session);
+        await db
+            .insert(Session)
+            .values({
+                id: decoded.sub.id,
+                access_token: data.data.access_token,
+                refresh_token: data.data.refresh_token,
+                menu: JSON.stringify(data.data.menu),
+                image: getTenant.image,
+                primary_color: getTenant.primary_color,
+                secondary_color: getTenant.secondary_color,
+            });
+        Astro.cookies.set("id", `${decoded.sub.id}`);
+        return Astro.redirect("/home");
     } catch (error) {
-        if(error instanceof Error){
-            console.log(error.message);
-        }
+        console.log(error);
+        state = true;
     }
 }
 ---
+
 <LoginLayout>
-    <Login />
+    <Login status={state}/>
 </LoginLayout>
-<script>
+<script></script>

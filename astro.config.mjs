@@ -6,11 +6,13 @@ import alpinejs from "@astrojs/alpinejs";
 import node from "@astrojs/node";
 import tailwind from "@astrojs/tailwind";
 
-import vercel from "@astrojs/vercel/serverless";
+import db from "@astrojs/db";
 
 export default defineConfig({
-  adapter: vercel(),
-  integrations: [alpinejs(), icon(), tailwind()],
+  adapter: node({
+    mode: "standalone"
+  }),
+  integrations: [alpinejs(), icon(), tailwind(), db()],
   output: 'server',
   prefetch: {
     defaultStrategy: 'tap'

@@ -1,4 +1,7 @@
 ---
-const image = Astro.cookies.get("image").value;
+import {db, Session, eq} from "astro:db";
+const id = Astro.cookies.get("id").value;
+const data = await db.select().from(Session).where(eq(Session.id, id))
+const image = data[0].image
 ---
 <img class="h-20 w-auto mx-auto bg-transparent" src=`${image}`/>
