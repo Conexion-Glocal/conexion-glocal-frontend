@@ -1,39 +1,53 @@
 ---
 import Input from "@components/shared/forms/Input.astro";
-
+import TextArea from "@components/shared/forms/TextArea.astro";
 ---
-<Input attributes={{
-    label: 'Nombre del tenant',
-    name: 'name',
-    id: 'name',
-    required: '',
-    type: 'text'
-}}/>
-<Input attributes={{
-    label: 'Descripción del tenant',
-    name: 'description',
-    id: 'description',
-    required: '',
-    type: 'textarea'
-}}/>
-<Input attributes={{
-    label: 'Imagen del tenant',
-    name: 'image',
-    id: 'image',
-    required: '',
-    type: 'file'
-}}/>
-<Input attributes={{
-    label: 'Color primary del tenant',
-    name: 'primaryColor',
-    id: 'primaryColor',
-    required: '',
-    type: 'color'
-}}/>
-<Input attributes={{
-    label: 'Color secundary del tenant',
-    name: 'secondaryColor',
-    id: 'secondaryColor',
-    required: '',
-    type: 'color'
-}}/>
+<div>
+    <Input
+        attributes={{
+            label: "Nombre de la universidad",
+            name: "name",
+            id: "name",
+            required: "",
+            type: "text",
+        }}
+    />
+    <Input
+        attributes={{
+            label: "Descripción de la universidad",
+            name: "description",
+            id: "description",
+            required: "",
+            type: "text",
+        }}
+    />
+    <Input
+        attributes={{
+            label: "Imagen de la universidad",
+            name: "image",
+            id: "image",
+            required: "",
+            type: "file",
+        }}
+    />
+    <div class="grid grid-flow-col justify-items-stretch space-x-3">
+        <Input
+            attributes={{
+                label: "Color principal de la universidad",
+                name: "primary_color",
+                id: "primary_color",
+                required: "",
+                type: "color",
+            }}
+        />
+        <Input
+            attributes={{
+                label: "Color secundario de la universidad",
+                name: "secondary_color",
+                id: "secondary_color",
+                required: "",
+                type: "color",
+            }}
+        />
+    </div>
+</div>

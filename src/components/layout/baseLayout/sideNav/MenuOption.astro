@@ -1,10 +1,8 @@
 ---
 const {option: {name, path},} = Astro.props;
-const secondaryColor = Astro.cookies.get("secondary_color").value;
 ---
 <li>
     <a
-        style=`background-color: ${secondaryColor};`
         class="grid grid-cols-12 w-full items-center gap-x-3 p-1 text-left text-sm font-medium leading-6 text-amber-50 hover:bg-emerald-950 rounded-md my-1"
         href={path}>
         <div class="col-start-1 col-span-2">

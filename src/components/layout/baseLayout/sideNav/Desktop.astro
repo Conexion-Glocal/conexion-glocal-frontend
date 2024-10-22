@@ -1,20 +1,21 @@
 ---
 import Logo from "@components/layout/baseLayout/sideNav/Logo.astro";
 import Menu from "@components/layout/baseLayout/sideNav/Menu.astro";
-const menu = Astro.cookies.get("menu").value;
-const buildMenu = JSON.parse(menu);
-const primaryColor = Astro.cookies.get("primary_color").value;
+import { db, Session, eq } from 'astro:db';
+const id = Astro.cookies.get("id").value;
+const data = await db.select().from(Session).where(eq(Session.id, id));
+const buildMenu = JSON.parse(data[0].menu)
+const color = data[0].primary_color
 const MENU = [
-    {
-        name: buildMenu.name,
-        options: buildMenu.options
-    }
+  {
+    name: buildMenu.name,
+    options: buildMenu.options
+  }
 ]
 ---
-
 <div class="hidden lg:fixed lg:inset-y-0 lg:z-20 lg:flex lg:w-72 lg:flex-col">
-    <div id="1" style=`background-color: ${primaryColor};` class=`flex grow flex-col gap-y-5 overflow-y-auto px-6 py-4`>
-        <Logo/>
+    <div style=`background-color: ${color};` class=`flex grow flex-col gap-y-5 overflow-y-auto px-6 py-4`>
+        <Logo/>   
         <Menu menu={MENU}/>
     </div>
 </div>

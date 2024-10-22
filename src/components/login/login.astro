@@ -1,29 +1,33 @@
 ---
 import Input from "@components/shared/forms/Input.astro";
 import axios from "axios";
-import Icon from "node_modules/astro-icon/components/Icon.astro";
-let tenants = [];
-await axios
+const data = await axios
     .get(`${import.meta.env.PUBLIC_API_URL}tenant`)
-    .then((response) => (tenants = response.data))
+    .then((response) => (response.data))
     .catch((error) => console.log(console.log(error)));
+let { status } = Astro.props;
 ---
 
 <div
     class="bg-gray justify-center items-center rounded-lg shadow-lg p-12 w-full max-w-sm"
 >
     <div
-        x-data=`{tenants: ${JSON.stringify(tenants)}, imgTenant: '', primaryColor: '', secondaryColor: ''}`
+        x-data=`{tenants: ${JSON.stringify(data)}, imgTenant: '', primaryColor: '', secondaryColor: '', status: ${status}, endpoint: '${import.meta.env.PUBLIC_API_URL}tenant/'}`
     >
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-            <img :src="imgTenant" class="w-26 h-20 mx-auto"  transition:persist="slide"/>
+            <img
+                :src="imgTenant"
+                class="w-26 h-20 mx-auto"
+                transition:persist="slide"
+            />
             <h2
-                class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900"
+            >
                 Ingresa con tu cuenta
             </h2>
         </div>
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form class="space-y-6" method="post">
+            <form class="space-y-6" id="prueba" method="post">
                 <div>
                     <div class="col-span-2">
                         <label
@@ -36,16 +40,14 @@ await axios
                                 name="tenant"
                                 id="tenant"
                                 class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-emerald-950 sm:text-sm sm:leading-6"
-                                x-on:change=
-                                    `valueTenant=tenant.value
-                                    getTenantById = await fetch("http://172.28.20.251:3000/api/v1/tenant/"+valueTenant)
+                                x-on:change=`valueTenant=tenant.value
+                                    getTenantById = await fetch(endpoint+valueTenant)
                                     .then((response) => response.json())
                                     .then((data) => data)
                                     .catch((error) => console.log(error))
                                     imgTenant=getTenantById.image
-                                    primaryColor=getTenantById.colors.primary
-                                    secondaryColor=getTenantById.colors.secondary`
-                            >
+                                    primaryColor=getTenantById.primary_color
+                                    secondaryColor=getTenantById.secondary_color`>
                                 <option selected disabled value="select"
                                     >Seleccione una opcion</option
                                 >
@@ -84,29 +86,9 @@ await axios
                     >Entrar
                 </button>
             </form>
-            <div id="modal" hidden class="z-20">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-                <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-                  <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                    <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
-                      <div>
-                        <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
-                            <Icon name="delete" size={25}/>
-                        </div>
-                        <div class="mt-3 text-center sm:mt-5">
-                          <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">Datos incorrectos</h3>
-                          <div class="mt-2">
-                            <p class="text-sm text-gray-500">Por favor, verificar los datos.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="mt-5 sm:mt-6">
-                        <button type="button" id="incorrectDataButton" :style="{backgroundColor: secondaryColor}" class="inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Aceptar</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-            </div>  
-        </div>    
+            <div x-show="status" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded flex flex-col my-2" role="alert">
+                <strong class="font-bold">Error</strong>
+                <span class="block sm:inline">Vuelve a intentarlo o contacta a soporte.</span>
+            </div>
     </div>
 </div>

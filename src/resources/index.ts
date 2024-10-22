@@ -27,7 +27,11 @@ export async function handleCreate(e) {
     try {
         const data = Object.fromEntries(formData.entries());
         axios
-            .post(e.target.action, data)
+            .post(e.target.action, data,{
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }            
+            })
             .then(function (response) {
                 showAlert(response.statusText);
                 /* console.log("Todo en orden para Create");

@@ -24,7 +24,7 @@ const permissions = {
                 <div x-data="{id: '', name: '', description: '', image: '', primaryColor: '', secondaryColor: ''}">
                     <List endpoint={endpoint}/>
                     {permissions.create  ? (
-                        <CreateWindowLayout>
+                        <CreateWindowLayout endpoint={endpoint} name="Universidad">
                             <CreateForm endpoint={endpoint}/>
                         </CreateWindowLayout>
                     ) : (

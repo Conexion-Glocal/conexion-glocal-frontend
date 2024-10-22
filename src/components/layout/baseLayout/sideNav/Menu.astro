@@ -1,10 +1,12 @@
 ---
 import { Icon } from "astro-icon/components";
 import MenuApplicative from "./MenuApplicative.astro";
+import {db, Session, eq} from "astro:db";
 const { menu } = Astro.props;
-const primaryColor = Astro.cookies.get("primary_color").value;
+const id = Astro.cookies.get("id").value;
+const data = await db.select().from(Session).where(eq(Session.id, id));
+const primaryColor = data[0].primary_color
 ---
-
 <nav class="flex flex-1 flex-col" x-data={`{activeMenuItem: ''}`}>
   <ul class="flex flex-1 flex-col gap-y-1">
     <li x-data="{ currentRoute: window.location.pathname }">
@@ -78,32 +80,6 @@ const primaryColor = Astro.cookies.get("primary_color").value;
       </a>
     </li>
    <li class="mt-auto">
-    <!-- 
-    {
-      menu.map(
-        (applicative) =>
-          applicative.name === "Convocatorias" && (
-            <MenuApplicative
-              key={applicative.name}
-              Asegúrate
-              de
-              que
-              haya
-              una
-              key
-              si
-              es
-              un
-              array
-              de
-              elementos
-              name={applicative.name}
-              options={applicative.options}
-            />
-          ),
-      )
-    }
-      -->
         {
             menu.map((applicative) => (
                 <MenuApplicative

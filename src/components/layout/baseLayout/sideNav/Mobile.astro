@@ -2,14 +2,16 @@
 import { Icon } from "astro-icon/components";
 import Logo from "@components/layout/baseLayout/sideNav/Logo.astro";
 import Menu from "@components/layout/baseLayout/sideNav/Menu.astro";
-const menu = Astro.cookies.get("menu").value;
-const buildMenu = JSON.parse(menu);
-const primaryColor = Astro.cookies.get("primary_color").value;
+import { db, Session, like } from 'astro:db';
+const id = Astro.cookies.get("id").value;
+const data = await db.select().from(Session).where(like(Session.id, id));
+const menu = data[0].menu;
+const buildMenu = JSON.parse(menu)
 const MENU = [
-    {
-        name: buildMenu.name,
-        options: buildMenu.options
-    }
+  {
+    name: buildMenu.name,
+    options: buildMenu.options
+  }
 ]
 ---
 
@@ -23,7 +25,6 @@ const MENU = [
                 </button>
             </div>
             <div
-                style=`background-color: ${primaryColor};`
                 class="flex grow flex-col gap-y-5 overflow-y-auto px-6 py-4"
                 @click.outside="isSidebarMenuOpen = false"
             >
