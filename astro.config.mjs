@@ -1,11 +1,8 @@
 import { defineConfig } from 'astro/config';
-
 import icon from "astro-icon";
-
 import alpinejs from "@astrojs/alpinejs";
 import node from "@astrojs/node";
 import tailwind from "@astrojs/tailwind";
-
 import db from "@astrojs/db";
 
 export default defineConfig({
@@ -20,5 +17,5 @@ export default defineConfig({
   security: {
     checkOrigin: true
   },
-  site: 'http://localhost:4321'
+  site: 'http://190.121.154.52:4231'
 });
