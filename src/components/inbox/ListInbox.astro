@@ -45,10 +45,7 @@ const getStudentConvocation = [
 
 
 ---
-<div class="bg-white shadow-md rounded-md overflow-hidden mx-auto  max-w-full md:max-w-3xl" x-data="{ selectedrole: '' }">
-  <!-- <div class="bg-gray-100 py-2 px-4">
-    <h2 class="text-xl font-semibold text-gray-800">Convocatorias</h2>
-  </div> -->
+<div class="bg-white shadow-md rounded-md overflow-hidden mx-auto  max-w-full md:max-w-5xl" x-data="{ selectedrole: '' }">
 
   <div x-model="selectedrole" class="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-4 mb-10 ">
     <button
@@ -85,39 +82,76 @@ const getStudentConvocation = [
       >
 
       <template x-if="selectedrole === '' || selectedrole === convocatoria.role">
-        <li class="flex justify-between items-center py-2 px-3">
-          <img
-            class="w-12 h-12 rounded-full object-cover mr-4"
-            :src="`https://randomuser.me/api/portraits/men/${3 + index}.jpg`"
-            alt="User avatar"
-          />
+        <li class="flex flex-wrap items-center py-2 px-3 space-y-4">
 
-          <div class="w-full md:w-1/3 mb-4 md:mb-0">
-            <h3 class="text-gray-600 text-base" x-text="convocatoria.name"></h3>
-            <p class="text-gray-800 text-lg" x-text="convocatoria.user_name"></p>
-            <p class="text-gray-600 text-base" x-text="convocatoria.formation"></p>
-            <p class="text-gray-600 text-base" x-text="convocatoria.career"></p>
+          <div class="flex-shrink-0 mr-4">
+            <img
+              class="w-12 h-12 rounded-full object-cover"
+              :src="`https://randomuser.me/api/portraits/men/${3 + index}.jpg`"
+              alt="User avatar"
+            />
           </div>
-
-          <div class="grid grid-cols-2 md:grid-cols-4 w-full md:w-2/3 gap-2">
-            <div class="flex flex-col items-center">
-              <p class="text-sm">Documentos</p>
-              <Icon class="h-6 w-6 md:h-10 md:w-10" name="shared/check_circle" />
+        
+          <!-- User Information -->
+          <div class="flex-initial md:w-1/5 mb-4 md:mb-0">
+            <h3 class="text-gray-600 text-sm md:text-base" x-text="convocatoria.name"></h3>
+            <p class="text-gray-800 text-sm md:text-base" x-text="convocatoria.user_name"></p>
+            <p class="text-gray-600 text-sm md:text-base" x-text="convocatoria.formation"></p>
+            <p class="text-gray-600 text-sm md:text-base" x-text="convocatoria.career"></p>
+          </div>
+        
+          <!-- Steps Information -->
+          <div class="flex-grow w-full md:w-auto flex flex-wrap items-center justify-around space-x-4 mx-auto">
+            <!-- Step 1 -->
+            <div class="relative text-center">
+              <div class="flex items-center justify-center w-8 h-8 mx-auto mb-2 rounded-full bg-indigo-50 sm:w-10 sm:h-10 md:w-12 md:h-12">
+                <Icon class="h-6 w-6 md:h-8 md:w-8" name="shared/check_circle" />
+              </div>
+              <h4 class="text-sm font-bold md:text-base">Documentacion</h4>
             </div>
-            <div class="flex flex-col items-center">
-              <p class="text-sm">Admision</p>
-              <Icon class="h-6 w-6 md:h-10 md:w-10" name="shared/error" />
+        
+            <!-- Transition arrow between steps -->
+            <div class="flex items-center justify-center">
+              <Icon class="h-4 w-4 md:h-6 md:w-6" name="shared/transition-arrow" />
             </div>
-            <div class="flex flex-col items-center">
-              <p class="text-sm">Viaje</p>
-              <Icon class="h-6 w-6 md:h-10 md:w-10" name="shared/exclamation_sign" />
+        
+            <!-- Step 2 -->
+            <div class="relative text-center">
+              <div class="flex items-center justify-center w-8 h-8 mx-auto mb-2 rounded-full bg-indigo-50 sm:w-10 sm:h-10 md:w-12 md:h-12">
+                <Icon class="h-6 w-6 md:h-8 md:w-8" name="shared/check_circle" />
+              </div>
+              <h4 class="text-sm font-bold md:text-base">Admision</h4>
             </div>
-            <div class="flex flex-col items-center">
-              <p class="text-sm">Notas</p>
-              <Icon class="h-6 w-6 md:h-10 md:w-10" name="shared/check_circle" />
+        
+            <!-- Transition arrow between steps -->
+            <div class="flex items-center justify-center">
+              <Icon class="h-4 w-4 md:h-6 md:w-6" name="shared/transition-arrow" />
+            </div>
+        
+            <!-- Step 3 -->
+            <div class="relative text-center">
+              <div class="flex items-center justify-center w-8 h-8 mx-auto mb-2 rounded-full bg-indigo-50 sm:w-10 sm:h-10 md:w-12 md:h-12">
+                <Icon class="h-6 w-6 md:h-8 md:w-8" name="shared/error" />
+              </div>
+              <h4 class="text-sm font-bold md:text-base">Viaje</h4>
+            </div>
+        
+            <!-- Transition arrow between steps -->
+            <div class="flex items-center justify-center">
+              <Icon class="h-4 w-4 md:h-6 md:w-6" name="shared/transition-arrow" />
+            </div>
+        
+            <!-- Step 4 -->
+            <div class="relative text-center">
+              <div class="flex items-center justify-center w-8 h-8 mx-auto mb-2 rounded-full bg-indigo-50 sm:w-10 sm:h-10 md:w-12 md:h-12">
+                <Icon class="h-6 w-6 md:h-8 md:w-8" name="shared/error" />
+              </div>
+              <h4 class="text-sm font-bold md:text-base">Notas</h4>
             </div>
           </div>
         </li>
+        
+        
       </template>
         
       </template>
@@ -129,98 +163,3 @@ const getStudentConvocation = [
 
 
 
-<!-- 
-
-<div class="container p-5">
-    <div class="title text-3xl mb-5">
-        <h3>Procesos</h3>
-    </div>
-
-    <ul
-        class="bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl space-y-4"
-    >
-        {
-            tareas.length > 0 ? (
-                tareas.map(
-                    ({
-                        id,
-                        user_name,
-                        process_type,
-                        process,
-                        state,
-                        phase,
-                    }) => (
-                        <li class="flex justify-between items-center gap-x-6 px-1 py-2 hover:bg-gray-50 sm:px-6 ">
-                            <div class="w-3/4 flex flex-col min-w-0 gap-y-5">
-                                <div class="flex justify-between items-center flex-auto text-sm">
-                                    <div class="titles">
-                                        <p class="text-gray-800 text-lg">
-                                        {process}
-                                    </p>
-                                    <p class="font-semibold text-gray-900">
-                                        {user_name} 
-                                    </p>
-                                    </div>
-                                    <p class="text-gray-600">
-                                         {process_type}
-                                    </p>
-                                    
-                                    <p class="text-gray-600"> {state}</p>
-                                    <p class="text-gray-600">{phase}</p>
-                                </div>
-                            </div>
-
-                            <div class="flex justify-center items-center ">
-                                <button class=" bg-emerald-500 hover:bg-emerald-700 text-white font-bold py-1 px-2 rounded ">
-                                    Gestionar
-                                </button>
-                            </div>
-
-                            <div class="flex justify-end items-center"
-                                x-data="{isListOptionsMenuOpen: false}"
-                            >
-                                <div class="relative flex-none">
-                                    <button
-                                        class="-m-5.5 block p-2.5 text-gray-500 hover:text-gray-900"
-                                        type="button"
-                                        @click="isListOptionsMenuOpen = !isListOptionsMenuOpen"
-                                    >
-                                        <Icon
-                                            class="h-5 w-5"
-                                            name="shared/ellipsis-vertical"
-                                        />
-                                    </button>
-                                    <div
-                                        class="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-                                        tabindex="-1"
-                                        x-show="isListOptionsMenuOpen"
-                                        @click.outside="isListOptionsMenuOpen = false"
-                                    >
-                                        <a
-                                            href="#"
-                                            class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
-                                            tabindex="-1"
-                                            @click.prevent={`isUpdateWindowOpen = true; selectedProcess = '${id}';`}
-                                        >
-                                            Editar
-                                        </a>
-                                        <a
-                                            href="#"
-                                            class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
-                                            tabindex="-1"
-                                            @click.prevent={`isDeleteWindowOpen = true; selectedProcess = '${id}'; console.log('Proceso ID para eliminar:', '${id}')`}
-                                        >
-                                            Eliminar
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </li>
-                    ),
-                )
-            ) : (
-                <li class="text-gray-600 p-4">No hay procesos disponibles.</li>
-            )
-        }
-    </ul>
-</div> -->
