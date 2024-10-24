@@ -3,50 +3,96 @@ import { Icon } from "astro-icon/components";
 
 import { handleFind } from "@resources/index";
 
-const { endpoint, permissions } = Astro.props;
+import axios from "axios";
 
-// import axios from "axios";
-// let calls = [];
-// await axios.get(`${import.meta.env.API_URL}processes`)
-//   .then(function (response) {
-//     calls = response.data;
-//   })
-//   .catch(function (error) {
-//     console.log(error);
-//   })
 
-const getPublicConvocation = [
-  {
-    id: "E-24",
-    name: "Convocatoria 2024-01",
-    country: "Mexico",
-    university: "Universidad de Monterrey",
-    status: "Activo",
-  },
-  {
-    id: "D-22",
-    name: "Convocatoria 2024-02",
-    country: "Venezuela",
-    university: "Universidad de Los Andes",
-    status: "Activo",
-  },
-  {
-    id: "A-11",
-    name: "Convocatoria 2024-03",
-    country: "Brazil",
-    university: "Universidad de Brasilia (UnB)",
-    status: "Cerrada",
-  },
-];
+let processType = [];
+let processes = [];
+let processinfo = [];
+let processStudents = [];
+
+// 1. Obtener los tipos de proceso
+await axios
+  .get(`${import.meta.env.PUBLIC_API_URL}process-types`)
+  .then(function (response) {
+    processType = response.data;
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+// 2. Filtrar los tipos que son "Convocatorias" y obtener los procesos correspondientes
+let processDetails = processType
+  .filter(type => type.name === "Convocatorias") // Filtrar solo "Convocatorias"
+  .map((type) => {
+    return axios
+      .get(`${import.meta.env.PUBLIC_API_URL}processes/process-type/${type.id}`) // Obtener procesos por type.id
+      .then(function (response) {
+        processes = processes.concat(response.data); // Aplanar los procesos en un solo array
+      })
+      .catch(function (error) {
+        console.log(`Error fetching details for process ID: ${type.id}`, error);
+      });
+  });
+
+// Esperar que todas las solicitudes de procesos finalicen
+await Promise.all(processDetails);
+
+// 3. Obtener información completa de los procesos
+let processDetailsPromises = processes.map((process) => {
+  return axios
+    .get(`${import.meta.env.PUBLIC_API_URL}processes/complete/${process.id}`)
+    .then(function (response) {
+      return response.data; 
+    })
+    .catch(function (error) {
+      console.log(`Error fetching details for process ID: ${process.id}`, error);
+    });
+});
+
+// Esperar que todas las solicitudes de detalles de procesos finalicen
+await Promise.all(processDetailsPromises)
+  .then(function (results) {
+    processinfo = results.filter(result => result !== undefined); // Filtrar resultados válidos
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+// 4. Obtener los procesos con estudiantes
+let processWithStudents = processes.map((process) => {
+  return axios
+    .get(`${import.meta.env.PUBLIC_API_URL}processes/process-with-students/${process.id}`)
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      console.log(`Error fetching details for process ID: ${process.id}`, error);
+    });
+});
+
+// Esperar que todas las solicitudes de procesos con estudiantes finalicen
+await Promise.all(processWithStudents)
+  .then(function (results) {
+    processStudents = results.filter(result => result !== undefined); // Filtrar resultados válidos
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+console.log(processinfo)
+
 ---
+<style>
+  [x-cloak] { display: none !important; }
+</style>
+
+
 
 <div
   class="bg-white shadow-md rounded-md overflow-hidden mx-auto  "
-  x-data=`{ selectedrole: ''}`
+  x-data=`{ selectedrole: '', detailModal:false,  selectedCall: null}`
 >
-  <!-- <div class="bg-gray-100 py-2 px-4">
-    <h2 class="text-xl font-semibold text-gray-800">Convocatorias</h2>
-  </div> -->
 
   <div x-model="selectedrole" class="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-4 mt-4 mb-10">
     <button
@@ -73,12 +119,10 @@ const getPublicConvocation = [
       Docentes
     </button>
 </div>
-
-
   <div x-data="{ flags: ['BR/shiny/64.png', 'MX/shiny/64.png', 'VE/shiny/64.png'] }">
     <ul class="divide-y divide-gray-200">
-      <template x-for=`(convocatoria, index) in ${JSON.stringify(getPublicConvocation)}` :key="convocatoria.id">
-        <li class="flex flex-wrap justify-around items-center py-2 px-3" x-if="selectedrole === '' || selectedrole === convocatoria.role">
+      <template x-for=`(convocatoria, index) in ${JSON.stringify(processinfo)}` :key="convocatoria.process.id">
+        <li class="flex flex-wrap justify-around items-center py-2 px-3">
           <img
             class="w-12 h-12 rounded-full object-cover mr-4"
             :src="`https://flagsapi.com/${flags[index]}`"
@@ -86,13 +130,19 @@ const getPublicConvocation = [
           />
 
           <div class="w-full md:w-1/4 mx-auto md:mx-0 text-center md:text-left mb-5 md:mb-0">
-            <h3 class="text-black text-base" x-text="`${convocatoria.id} - ${convocatoria.country}`"></h3>
-            <p class="text-gray-600 text-base" x-text="convocatoria.university"></p>
+            <h3 class="text-black text-base" x-text="`${convocatoria.process.name} `"></h3>
+            <p class="text-gray-600 text-base" x-text="convocatoria.process.subprocess"></p>
         </div>
         
-        
+        <template x-for=`(estudiantes,index) in ${JSON.stringify(processStudents)}` :key="estudiantes.process.id">
+          <template x-if=`convocatoria.process.id === estudiantes.process.id`>
+            <div class=" w-10 h-10 bg-emerald-600 rounded-md text-white flex justify-center items-center">
+              <p x-text="estudiantes.process.student_ids.length"></p>
+            </div>
+          </template>
+        </template>
 
-          <template x-if="convocatoria.status === 'Activo'">
+          <template x-if="convocatoria.process.status === true">
             <div class="grid grid-cols-2 w-1/3 text-green-600">
               <div class="flex flex-col items-center">
                 <Icon class="h-10 w-10" name="shared/check_circle" />
@@ -101,7 +151,7 @@ const getPublicConvocation = [
             </div>
           </template>
 
-          <template x-if="convocatoria.status === 'Cerrada'">
+          <template x-if="convocatoria.process.status === false">
             <div class="grid grid-cols-2 w-1/3 text-red-600">
               <div class="flex flex-col items-center">
                 <Icon class="h-10 w-10" name="shared/error" />
@@ -121,19 +171,22 @@ const getPublicConvocation = [
             </button>
             
             <div class="absolute right-20 z-10 mt-2 w-32 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-gray-900/5 focus:outline-none" tabindex="-1" x-show="isListOptionsMenuOpen" @click.outside="isListOptionsMenuOpen = false">
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isUpdateWindowOpen = true; selectedProcess = convocatoria.id;">
+              <a  class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="detailModal = true; selectedCall = convocatoria.process;" >
+                Ver detalles
+              </a>
+              <a href="#"x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isUpdateWindowOpen = true; selectedCall = convocatoria.id;">
                 Duplicar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isDeleteWindowOpen = true; selectedProcess = convocatoria.id; console.log('Proceso ID para eliminar:', convocatoria.id)">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isDeleteWindowOpen = true; selectedCall = convocatoria.id; console.log('Proceso ID para eliminar:', convocatoria.id)">
                 Eliminar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
                 Modificar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
                 Publicar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
                 Postulados
               </a>
             </div>
@@ -142,79 +195,60 @@ const getPublicConvocation = [
       </template>
     </ul>
   </div>
+  <div
+  x-cloak
+    x-show="detailModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  >
+    <div
+      class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full relative"
+      @click.away="detailModal = false"
+    >
+      <button
+        @click="detailModal = false"
+        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+      >
+        <Icon class="h-8 w-8" name="shared/close" />
+      </button>
+      <img
+        class="w-12 h-12 rounded-full object-cover mb-4"
+        :src="image"
+        alt="Country"
+      />
+      <h2
+        class="text-2xl font-bold text-center mb-4"
+        x-text="selectedCall?.name"
+      >
+      </h2>
+      <p class="text-gray-700" x-text="selectedCall?.subprocess"></p>
+
+      <ul>
+        <template x-for="(phase, index) in selectedCall.phases" :key=`phase.id`>
+          <li>
+            <hr class="border-black my-2" />
+            <p class="text-gray-700" x-text="phase.name"></p>
+            <p class="text-gray-700" x-text="phase.description"></p>
+            <p class="text-gray-700" x-text="phase.form.name"></p>
+            <p class="text-gray-700" x-text="phase.form.description"></p>
+          </li>
+        </template>
+      </ul>
+
+      <div class="mt-6 flex justify-center items-center">
+        <button
+          @click="detailModal = false"
+          style="background-color: #99CC33;"
+          class="hover:bg-emerald-700 text-white py-2 px-4 rounded-full"
+        >
+        Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
-</div>
 
 
 
-<!-- <ul
-  class="divide-y divide-gray-100 bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl"
->
-  {
-    getPublicConvocation.length > 0 ? (
-      getPublicConvocation.map(({ id, name }) => (
-        <li class="grid grid-cols-3 gap-x-6 px-2 py-3 hover:bg-gray-50 sm:px-6">
-          <div class="flex flex-col min-w-0 gap-y-2">
-            <div class="min-w-0 flex-auto">
-              <h4 class="text-lg font-semibold text-gray-900">{name}</h4>
-              <p class="text-gray-600">Oferta: </p>
-              <p class="text-gray-600">Fecha de inicio: </p>
-              <p class="text-gray-600">Fecha de fin: </p>
-            </div>
-          </div>
-          <div class="flex justify-center items-center space-x-10">
-            <button
-              type="button"
-              class="inline-flex items-center justify-center rounded-md  bg-emerald-500 hover:bg-emerald-700 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300"
-            >
-              Ver detalles
-            </button>
-            <button
-              type="button"
-              class="inline-flex items-center justify-center rounded-md  bg-yellow-300 hover:bg-yellow-500 px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300"
-            >
-              Nominar
-            </button>
-          </div>
-          <div
-            class="flex justify-end items-center"
-            x-data="{isListOptionsMenuOpen: false}"
-          >
-            <button
-              class="-m-5.5 block p-2.5 text-gray-500 hover:text-gray-900"
-              type="button"
-              @click="isListOptionsMenuOpen = !isListOptionsMenuOpen"
-            >
-              <Icon class="h-10 w-10" name="shared/ellipsis-vertical" />
-            </button>
-            <div
-              class="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-              tabindex="-1"
-              x-show="isListOptionsMenuOpen"
-              @click.outside="isListOptionsMenuOpen = false"
-            >
-              <a
-                href="#"
-                class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
-                tabindex="-1"
-              >
-                Editar
-              </a>
 
-              <a
-                href="#"
-                class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50"
-                tabindex="-1"
-                @click.prevent={` id = '${id}'; console.log('Form ID for delete:', '${id}');`}
-              >
-                Eliminar
-              </a>
-            </div>
-          </div>
-        </li>
-      ))
-    ) : (
-      <li class="text-gray-600 p-4">No hay convocatorias disponibles.</li>
-    )
-  }
-</ul> -->
+
+

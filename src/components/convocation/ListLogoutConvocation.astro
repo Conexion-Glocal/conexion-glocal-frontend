@@ -5,61 +5,11 @@ import { handleFind } from "@resources/index";
 
 const { endpoint, permissions } = Astro.props;
 
-// const getPublicConvocation = [
-//   {
-//     id: "E-24",
-//     name: "Convocatoria 2024-01",
-//     country: "Mexico",
-//     role: "Estudiante",
-//     university: "Universidad de Monterrey",
-//     status: "Activo",
-//   },
-//   {
-//     id: "D-22",
-//     name: "Convocatoria 2024-02",
-//     country: "Venezuela",
-//     role: "Estudiante",
-//     university: "Universidad de Los Andes",
-//     status: "Activo",
-//   },
-//   {
-//     id: "A-11",
-//     name: "Convocatoria 2024-03",
-//     country: "Brazil",
-//     role: "Docente",
-//     university: "Universidad de Brasilia (UnB)",
-//     status: "Cerrada",
-//   },
-//   {
-//     id: "E-20",
-//     name: "Convocatoria 2024-01",
-//     country: "Mexico",
-//     role: "Estudiante",
-//     university: "Universidad de Monterrey",
-//     status: "Activo",
-//   },
-//   {
-//     id: "D-33",
-//     name: "Convocatoria 2024-02",
-//     country: "Venezuela",
-//     role: "Estudiante",
-//     university: "Universidad de Los Andes",
-//     status: "Activo",
-//   },
-//   {
-//     id: "A-99",
-//     name: "Convocatoria 2024-03",
-//     country: "Brazil",
-//     role: "Docente",
-//     university: "Universidad de Brasilia (UnB)",
-//     status: "Cerrada",
-//   },
-// ];
 
 import axios from "axios";
 let getPublicConvocation = [];
 await axios
-  .get(`${import.meta.env.API_URL}processes`)
+  .get(`${import.meta.env.PUBLIC_API_URL}processes`)
   .then(function (response) {
     getPublicConvocation = response.data;
   })
@@ -70,7 +20,7 @@ await axios
 let processinfo = [];
 let processDetailsPromises = getPublicConvocation.map((process) => {
   return axios
-    .get(`${import.meta.env.API_URL}processes/details/${process.id}`)
+    .get(`${import.meta.env.PUBLIC_API_URL}processes/complete/${process.id}`)
     .then(function (response) {
       return response.data; // Retornar los detalles del proceso
     })
@@ -91,28 +41,6 @@ await Promise.all(processDetailsPromises)
   });
 ---
 
-<!-- 
-<div class="grid grid-cols-1 justify-items-center sm:grid-cols-2 md:grid-cols-3 gap-2 bg-[#11426E]" x-data="{ flags: ['BR/shiny/64.png', 'MX/shiny/64.png', 'VE/shiny/64.png','BR/shiny/64.png', 'MX/shiny/64.png', 'VE/shiny/64.png'] } ">
-    
-    <template x-for=`(convocatoria,index) in ${JSON.stringify(getPublicConvocation)}` :key="convocatoria.id">
-      <div class="bg-[#092A48] rounded-lg shadow-md overflow-hidden relative text-white m-5 flex flex-col  items-center w-4/5">
-        <img
-            class="w-12 h-12 rounded-full object-cover mr-4"
-            :src="`https://flagsapi.com/${flags[index]}`"
-            alt="Country avatar"
-          />
-        <div class="p-4 flex flex-col justify-center items-center">
-          <h3 class="text-lg font-semibold" x-text="`${convocatoria.id} - ${convocatoria.country}`"></h3>
-          <p class="" x-text="convocatoria.university"></p>
-        </div>
-        <hr class="border-yellow-500 border-t-1 w-4/5">
-        <p class="mt-2 text-[#FFDF0C]" x-text="convocatoria.role"></p>
-        <div class="flex justify-center py-4">
-            <Icon class="h-8 w-8" name="shared/circledArrow" />
-        </div>
-      </div>
-    </template>
-  </div> -->
 <div
   class="grid grid-cols-1 justify-items-center sm:grid-cols-2 md:grid-cols-3 gap-2"
   style="background-color:#11426E ;"
@@ -137,7 +65,7 @@ await Promise.all(processDetailsPromises)
         />
         <div class="p-4 flex flex-col justify-center items-center">
           <h3
-            class="text-lg font-semibold"
+            class="text-lg font-semibold" 
             x-text="`${convocatoria.process.name}`"
           >
           </h3>
