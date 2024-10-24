@@ -6,6 +6,7 @@ import { db, Session } from "astro:db";
 import jwt from 'jsonwebtoken';
 const endpointData = `${import.meta.env.PUBLIC_API_URL}auth/login`;
 const endpointTenant = `${import.meta.env.PUBLIC_API_URL}tenant`;
+const publicEndpoint = `${import.meta.env.PUBLIC_API_URL}`;
 let state;
 if (Astro.request.method === "POST") {
     try {
@@ -22,6 +23,7 @@ if (Astro.request.method === "POST") {
                 password: password,
             },
         });
+        console.log(data.data);
         const decoded = jwt.verify(data.data.access_token, "secretkey");
         const getTenant = await axios
             .get(`${endpointTenant}/${tenant}`)
@@ -31,15 +33,15 @@ if (Astro.request.method === "POST") {
         await db
             .insert(Session)
             .values({
-                id: decoded.sub.id,
+                id: decoded.sub['id'],
                 access_token: data.data.access_token,
                 refresh_token: data.data.refresh_token,
                 menu: JSON.stringify(data.data.menu),
-                image: getTenant.image,
+                image: `${publicEndpoint}`+getTenant.image,
                 primary_color: getTenant.primary_color,
                 secondary_color: getTenant.secondary_color,
             });
-        Astro.cookies.set("id", `${decoded.sub.id}`);
+        Astro.cookies.set("id", `${decoded.sub['id']}`);
         return Astro.redirect("/home");
     } catch (error) {
         console.log(error);
@@ -47,8 +49,6 @@ if (Astro.request.method === "POST") {
     }
 }
 ---
-
 <LoginLayout>
     <Login status={state}/>
 </LoginLayout>
-<script></script>

@@ -1,22 +1,28 @@
 ---
-import { Icon } from "astro-icon/components";
 import Logo from "@components/layout/baseLayout/sideNav/Logo.astro";
 import Menu from "@components/layout/baseLayout/sideNav/Menu.astro";
-import { db, Session, like } from 'astro:db';
+import { db, Session, eq } from "astro:db";
+import Icon from "node_modules/astro-icon/components/Icon.astro";
 const id = Astro.cookies.get("id").value;
-const data = await db.select().from(Session).where(like(Session.id, id));
-const menu = data[0].menu;
-const buildMenu = JSON.parse(menu)
-const MENU = [
+const data = await db.select().from(Session).where(eq(Session.id, id));
+const buildMenu = JSON.parse(data[0].menu);
+const color = data[0].primary_color;
+const DataMenu = [
+  ...buildMenu.dataMenu.map((e) => ({
+    name: e.name,
+    options: e.options,
+  })),
+];
+const ConfigurationMenu = [
   {
-    name: buildMenu.name,
-    options: buildMenu.options
-  }
-]
+    name: buildMenu.configuration.name,
+    options: buildMenu.configuration.options,
+  },
+];
 ---
 
 <div class="relative z-20 lg:hidden">
-    <div class="fixed inset-0 bg-gray-900/80" x-show="isSidebarMenuOpen"></div>
+    <div class="fixed inset-0" x-show="isSidebarMenuOpen">
     <div class="fixed inset-0 flex" x-show="isSidebarMenuOpen">
         <div class="relative mr-16 flex w-full max-w-xs flex-1">
             <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
@@ -27,9 +33,17 @@ const MENU = [
             <div
                 class="flex grow flex-col gap-y-5 overflow-y-auto px-6 py-4"
                 @click.outside="isSidebarMenuOpen = false"
+                style=`background-color: ${color};`
             >
                 <Logo />
-                <Menu menu={MENU} />
+                <div class="flex flex-col h-screen justify-between">
+                    <div>
+                      <Menu menu={DataMenu} />
+                    </div>
+                    <div>
+                      <Menu menu={ConfigurationMenu} />
+                    </div>
+                  </div>
             </div>
         </div>
     </div>

@@ -2,28 +2,25 @@
 import axios from "axios";
 import Icon from "node_modules/astro-icon/components/Icon.astro";
 const { endpoint } = Astro.props;
-let data = [];
-await axios
+const publicEndpoint = `${import.meta.env.PUBLIC_API_URL}`;
+const data = await axios
     .get(`${endpoint}`)
-    .then((response) => (data = response.data))
+    .then((response) => (response.data))
     .catch((error) => console.log(error));
 ---
-
 <ul class="divide-y divide-gray-100 bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
     {
         data.length
-            ? data.map(({ description, id, name }) => (
+            ? data.map(({ description, id, name, image }) => (
                   <li class="relative flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6">
                       <div class="flex min-w-0 gap-x-4">
+                        <div class="margin align-middle">
+                        <img src=`${publicEndpoint}${image}` class="rounded-full w-12 h-12 object-cover"/>
+                        </div>
                           <div class="min-w-0 flex-auto">
                               <p class="text-sm font-semibold leading-6 text-gray-900">
-                                  <a
-                                      href="#"
-                                      @click.prevent={`description = '${description || ""}'; id = '${id}'; name = '${name}'; isInfoDrawerOpen = true;`}
-                                  >
                                       <span class="absolute inset-x-0 -top-px bottom-0" />
                                       {name}
-                                  </a>
                               </p>
                               <p class="mt-1 flex text-xs leading-5 text-gray-500">
                                   {description}
