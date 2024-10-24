@@ -1,0 +1,57 @@
+---
+import Input from "@components/shared/forms/Input.astro";
+import TextArea from "@components/shared/forms/TextArea.astro";
+import axios from "axios";
+
+let tenants = [];
+await axios
+  .get(`${import.meta.env.PUBLIC_API_URL}tenant`)
+  .then(function (response) {
+    tenants = response.data;
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+
+
+
+---
+<div>
+    <div class="mb-4">
+        <Input
+            attributes={{
+                label: "Nombre del rol:",
+                name: "role",
+                id: "role",
+                required: "true",
+                type: "text",
+            }}
+        />
+    </div>
+    <div class="mb-2">
+        <TextArea
+            attributes={{
+                label: "Descripción del rol:",
+                name: "description",
+                id: "description",
+                required: "",
+                type: "text",
+            }}
+            class="h-20 px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-emerald-300"
+        />
+    </div>
+    <div class="mb-4">
+        <label for="role" class="text-gray-700 font-semibold">Selecciona una universidad:</label>
+        <select
+            id="role"
+            class="ml-3 px-4 py-2 border border-gray-300 rounded-md focus:ring focus:ring-emerald-300 w-full"
+            x-model="selectedRole"
+            required
+        >
+            <template x-for=`tenant in ${JSON.stringify(tenants)}` :key="tenant.id">
+                <option x-text="tenant.name" :value="tenant.id"></option>
+            </template>
+        </select>
+    </div>
+</div>
+

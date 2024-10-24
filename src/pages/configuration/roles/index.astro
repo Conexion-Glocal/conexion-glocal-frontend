@@ -1,5 +1,5 @@
 ---
-import ListRoles from "@components/roles/ListRoles.astro";
+import ListRoles from "@components/configuration/roles/ListRoles.astro";
 
 import DeleteWindow from "@components/layout/baseLayout/DeleteWindow.astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
@@ -10,8 +10,8 @@ import UpdateWindowLayout from "@layouts/shared/UpdateWindowLayout.astro";
 
 
 import { validatePermission } from "@utils/permissions";
-import CreateRole from "@components/roles/CreateRole.astro";
-import UpdateRole from "@components/roles/UpdateRole.astro";
+import CreateRole from "@components/configuration/roles/CreateRole.astro";
+import UpdateRole from "@components/configuration/roles/UpdateRole.astro";
 const permissions = {
     create: validatePermission(""),
     delete: validatePermission(""),

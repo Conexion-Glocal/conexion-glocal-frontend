@@ -1,0 +1,76 @@
+---
+import { Icon } from "astro-icon/components";
+import axios from "axios";
+
+let userRoles =[]
+await axios
+  .get(`${import.meta.env.PUBLIC_API_URL}system/roles`)
+  .then(function (response) {
+    userRoles = response.data;
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+---
+<div class="container p-4 mx-auto" x-data="{ selectedRole: '' }">
+    <div class="title text-3xl text-center mb-5">
+        <h3>Roles de usuarios</h3>
+    </div>
+    
+    <ul class="bg-white shadow-md ring-1 ring-gray-900/5 rounded-xl divide-y divide-gray-200">
+        <template x-for=`role in ${JSON.stringify(userRoles)}` :key="role.id">
+            <li class="flex justify-between items-center p-4 hover:bg-gray-50 sm:px-6">
+                <!-- Información del rol -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 flex-auto gap-4 text-sm justify-center items-center">
+                    <p class="font-semibold text-gray-900" x-text="role.name"></p>
+                    <p class="text-gray-600" x-text="role.description"></p>
+                    <div x-data="{ estate: role.status }" class="md:flex md:items-center md:justify-end mt-2 md:mt-0">
+                        <template x-if="estate === true">
+                            <span class="inline-flex items-center bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                <span class="w-2 h-2 me-1 bg-green-500 rounded-full"></span>
+                                Habilitado
+                            </span>
+                        </template>
+                        <template x-if="estate === false">
+                            <span class="inline-flex items-center bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                                <span class="w-2 h-2 me-1 bg-red-500 rounded-full"></span>
+                                Deshabilitado
+                            </span>
+                        </template>
+                    </div>
+                </div>
+                <div class="relative flex justify-end items-center" x-data="{ isListOptionsMenuOpen: false }">
+                    <button
+                        class="block p-2 text-gray-500 hover:text-gray-900"
+                        type="button"
+                        @click="isListOptionsMenuOpen = !isListOptionsMenuOpen"
+                    >
+                        <Icon class="h-5 w-5" name="shared/ellipsis-vertical"></Icon>
+                    </button>
+                    
+                    <div
+                        class="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5"
+                        x-show="isListOptionsMenuOpen"
+                        @click.outside="isListOptionsMenuOpen = false"
+                    >
+                        <a
+                            href="#"
+                            class="block px-3 py-1 text-sm text-gray-900 hover:bg-gray-50"
+                            @click.prevent="isUpdateWindowOpen = true; selectedProcess = role.id;"
+                        >
+                            Editar
+                        </a>
+                        <a
+                            href="#"
+                            class="block px-3 py-1 text-sm text-gray-900 hover:bg-gray-50"
+                            @click.prevent="isDeleteWindowOpen = true; selectedProcess = role.id;"
+                        >
+                            Eliminar
+                        </a>
+                    </div>
+                </div>
+            </li>
+        </template>
+    </ul>
+</div>
+

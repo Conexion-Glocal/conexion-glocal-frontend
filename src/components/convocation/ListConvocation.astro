@@ -3,74 +3,95 @@ import { Icon } from "astro-icon/components";
 
 import { handleFind } from "@resources/index";
 
-
 import axios from "axios";
-let getPublicConvocation = [];
+
+
+let processType = [];
+let processes = [];
+let processinfo = [];
+let processStudents = [];
+
+// 1. Obtener los tipos de proceso
 await axios
-  .get(`${import.meta.env.PUBLIC_API_URL}processes`)
+  .get(`${import.meta.env.PUBLIC_API_URL}process-types`)
   .then(function (response) {
-    getPublicConvocation = response.data;
+    processType = response.data;
   })
   .catch(function (error) {
     console.log(error);
   });
 
-let processinfo = [];
-let processDetailsPromises = getPublicConvocation.map((process) => {
+// 2. Filtrar los tipos que son "Convocatorias" y obtener los procesos correspondientes
+let processDetails = processType
+  .filter(type => type.name === "Convocatorias") // Filtrar solo "Convocatorias"
+  .map((type) => {
+    return axios
+      .get(`${import.meta.env.PUBLIC_API_URL}processes/process-type/${type.id}`) // Obtener procesos por type.id
+      .then(function (response) {
+        processes = processes.concat(response.data); // Aplanar los procesos en un solo array
+      })
+      .catch(function (error) {
+        console.log(`Error fetching details for process ID: ${type.id}`, error);
+      });
+  });
+
+// Esperar que todas las solicitudes de procesos finalicen
+await Promise.all(processDetails);
+
+// 3. Obtener información completa de los procesos
+let processDetailsPromises = processes.map((process) => {
   return axios
     .get(`${import.meta.env.PUBLIC_API_URL}processes/complete/${process.id}`)
     .then(function (response) {
-      return response.data; // Retornar los detalles del proceso
+      return response.data; 
     })
     .catch(function (error) {
-      console.log(
-        `Error fetching details for process ID: ${process.id}`,
-        error,
-      );
+      console.log(`Error fetching details for process ID: ${process.id}`, error);
     });
 });
 
-
-
-
+// Esperar que todas las solicitudes de detalles de procesos finalicen
 await Promise.all(processDetailsPromises)
   .then(function (results) {
-    processinfo = results;
+    processinfo = results.filter(result => result !== undefined); // Filtrar resultados válidos
   })
   .catch(function (error) {
     console.log(error);
   });
 
+// 4. Obtener los procesos con estudiantes
+let processWithStudents = processes.map((process) => {
+  return axios
+    .get(`${import.meta.env.PUBLIC_API_URL}processes/process-with-students/${process.id}`)
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      console.log(`Error fetching details for process ID: ${process.id}`, error);
+    });
+});
 
-let processStudents=[]
-let processWithStudents= getPublicConvocation.map((process)=>{
-  return axios.get(`${import.meta.env.PUBLIC_API_URL}processes/process-with-students/${process.id}`)
-  .then(function(response){
-    return response.data
-  })
-  .catch(function(error){
-    console.log(`Error fetching details for process ID: ${process.id}`,
-        error,);
-  })
-})
-
+// Esperar que todas las solicitudes de procesos con estudiantes finalicen
 await Promise.all(processWithStudents)
   .then(function (results) {
-    processStudents = results;
+    processStudents = results.filter(result => result !== undefined); // Filtrar resultados válidos
   })
   .catch(function (error) {
     console.log(error);
   });
 
-
-console.log(processStudents)
-
+console.log(processinfo)
 
 ---
+<style>
+  [x-cloak] { display: none !important; }
+</style>
+
+
 
 <div
   class="bg-white shadow-md rounded-md overflow-hidden mx-auto  "
-  x-data=`{ selectedrole: ''}`
+  x-data=`{ selectedrole: '', detailModal:false,  selectedCall: null}`
 >
 
   <div x-model="selectedrole" class="flex flex-col md:flex-row justify-center space-y-2 md:space-y-0 md:space-x-4 mt-4 mb-10">
@@ -98,8 +119,6 @@ console.log(processStudents)
       Docentes
     </button>
 </div>
-
-
   <div x-data="{ flags: ['BR/shiny/64.png', 'MX/shiny/64.png', 'VE/shiny/64.png'] }">
     <ul class="divide-y divide-gray-200">
       <template x-for=`(convocatoria, index) in ${JSON.stringify(processinfo)}` :key="convocatoria.process.id">
@@ -152,22 +171,22 @@ console.log(processStudents)
             </button>
             
             <div class="absolute right-20 z-10 mt-2 w-32 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-gray-900/5 focus:outline-none" tabindex="-1" x-show="isListOptionsMenuOpen" @click.outside="isListOptionsMenuOpen = false">
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isUpdateWindowOpen = true; selectedProcess = convocatoria.id;">
+              <a  class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="detailModal = true; selectedCall = convocatoria.process;" >
                 Ver detalles
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isUpdateWindowOpen = true; selectedProcess = convocatoria.id;">
+              <a href="#"x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isUpdateWindowOpen = true; selectedCall = convocatoria.id;">
                 Duplicar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isDeleteWindowOpen = true; selectedProcess = convocatoria.id; console.log('Proceso ID para eliminar:', convocatoria.id)">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1" @click.prevent="isDeleteWindowOpen = true; selectedCall = convocatoria.id; console.log('Proceso ID para eliminar:', convocatoria.id)">
                 Eliminar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
                 Modificar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
                 Publicar
               </a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
+              <a href="#" x-cloak class="block px-3 py-1 text-sm leading-6 text-gray-900 hover:bg-gray-50" tabindex="-1">
                 Postulados
               </a>
             </div>
@@ -175,6 +194,56 @@ console.log(processStudents)
         </li>
       </template>
     </ul>
+  </div>
+  <div
+  x-cloak
+    x-show="detailModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+  >
+    <div
+      class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-full relative"
+      @click.away="detailModal = false"
+    >
+      <button
+        @click="detailModal = false"
+        class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+      >
+        <Icon class="h-8 w-8" name="shared/close" />
+      </button>
+      <img
+        class="w-12 h-12 rounded-full object-cover mb-4"
+        :src="image"
+        alt="Country"
+      />
+      <h2
+        class="text-2xl font-bold text-center mb-4"
+        x-text="selectedCall?.name"
+      >
+      </h2>
+      <p class="text-gray-700" x-text="selectedCall?.subprocess"></p>
+
+      <ul>
+        <template x-for="(phase, index) in selectedCall.phases" :key=`phase.id`>
+          <li>
+            <hr class="border-black my-2" />
+            <p class="text-gray-700" x-text="phase.name"></p>
+            <p class="text-gray-700" x-text="phase.description"></p>
+            <p class="text-gray-700" x-text="phase.form.name"></p>
+            <p class="text-gray-700" x-text="phase.form.description"></p>
+          </li>
+        </template>
+      </ul>
+
+      <div class="mt-6 flex justify-center items-center">
+        <button
+          @click="detailModal = false"
+          style="background-color: #99CC33;"
+          class="hover:bg-emerald-700 text-white py-2 px-4 rounded-full"
+        >
+        Cerrar
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
